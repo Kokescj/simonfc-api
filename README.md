@@ -86,3 +86,4 @@ Swagger en `http://localhost:3000/api/docs`.
 - Rate limiting: 5/min login, 3/min register, 10/min refresh; 30/min global
 - ValidationPipe global con `whitelist + forbidNonWhitelisted`
 - CORS estricto con allowlist de orígenes en producción
+# simonfc-api
