@@ -29,6 +29,13 @@ jobs:
         run: |
           ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} bash <<'EOF'
             set -euo pipefail
+
+            # pnpm se instala en ~/.local/share/pnpm pero solo se carga en
+            # shells interactivos via ~/.bashrc. GitHub Actions usa un shell
+            # no-interactivo, por eso exportamos PATH manualmente.
+            export PNPM_HOME="$HOME/.local/share/pnpm"
+            export PATH="$PNPM_HOME/bin:/usr/local/bin:/usr/bin:/bin"
+
             cd ~/simonfc-api
 
             echo "==> Pulling latest..."
