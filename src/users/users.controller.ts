@@ -1,7 +1,7 @@
-import { Body, Controller, Delete, Get, Param, Patch, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UsersService } from './users.service';
-import { UpdateUserDto } from './dto';
+import { CreateUserDto, UpdateUserDto } from './dto';
 import { AuthGuard, RolesGuard } from '../common/guards';
 import { Roles, User } from '../common/decorators';
 import { CurrentUser, UserRole } from '../common';
@@ -18,6 +18,13 @@ export class UsersController {
   @ApiOperation({ summary: 'Listar todos los usuarios (Admin/Supervisor)' })
   findAll() {
     return this.usersService.findAll();
+  }
+
+  @Post()
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Crear usuario con roles arbitrarios (Admin)' })
+  create(@Body() dto: CreateUserDto) {
+    return this.usersService.create(dto);
   }
 
   @Get(':id')

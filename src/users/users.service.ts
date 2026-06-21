@@ -1,7 +1,10 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
-import { UpdateUserDto } from './dto';
+import { CreateUserDto, UpdateUserDto } from './dto';
 import { UserRole } from '../common';
+
+const BCRYPT_COST = 12;
 
 const USER_SELECT = {
   id: true,
@@ -25,6 +28,24 @@ export class UsersService {
     return this.prisma.user.findMany({
       select: USER_SELECT,
       orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async create(dto: CreateUserDto) {
+    const existing = await this.prisma.user.findUnique({ where: { email: dto.email } });
+    if (existing) {
+      throw new ConflictException(`El correo ${dto.email} ya está registrado`);
+    }
+    const hashed = await bcrypt.hash(dto.password, BCRYPT_COST);
+    return this.prisma.user.create({
+      data: {
+        name: dto.name,
+        lastName: dto.lastName,
+        email: dto.email,
+        password: hashed,
+        roles: dto.roles ?? [UserRole.USUARIO],
+      },
+      select: USER_SELECT,
     });
   }
 
