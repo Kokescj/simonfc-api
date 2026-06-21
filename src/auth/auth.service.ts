@@ -96,6 +96,10 @@ export class AuthService {
       throw new BadRequestException('Email o contraseña incorrectos');
     }
 
+    if (user.status !== 'activo') {
+      throw new BadRequestException('Cuenta no disponible');
+    }
+
     const currentUser: CurrentUser = {
       id: user.id,
       name: user.name,

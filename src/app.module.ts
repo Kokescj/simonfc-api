@@ -9,6 +9,7 @@ import { RegistrationsModule } from './registrations/registrations.module';
 import { RealtimeModule } from './realtime/realtime.module';
 import { ProfileModule } from './profile/profile.module';
 import { StorageModule } from './storage/storage.module';
+import { UsersModule } from './users/users.module';
 import { envs } from './config/envs';
 
 @Module({
@@ -21,6 +22,7 @@ import { envs } from './config/envs';
     RegistrationsModule,
     ProfileModule,
     StorageModule,
+    UsersModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: CustomThrottlerGuard },
