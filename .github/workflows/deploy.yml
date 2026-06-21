@@ -1,0 +1,65 @@
+name: Deploy to VM
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add VM to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} bash <<'EOF'
+            set -euo pipefail
+            cd ~/simonfc-api
+
+            echo "==> Pulling latest..."
+            git fetch --prune origin main
+            git reset --hard origin/main
+
+            echo "==> Installing dependencies..."
+            pnpm install --frozen-lockfile
+
+            echo "==> Generating Prisma client..."
+            pnpm prisma generate
+
+            echo "==> Building..."
+            pnpm build
+
+            echo "==> Restarting service..."
+            sudo /usr/bin/systemctl restart simonfc-api
+            sleep 3
+            sudo /usr/bin/systemctl status simonfc-api --no-pager | head -10
+          EOF
+
+      - name: Health check
+        run: |
+          for i in {1..10}; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" https://api.portalscj.org/api/docs-json)
+            if [ "$code" = "200" ]; then
+              echo "✅ API responding (HTTP $code)"
+              exit 0
+            fi
+            echo "Attempt $i: HTTP $code, retrying in 3s..."
+            sleep 3
+          done
+          echo "❌ API did not return 200 after 30s"
+          exit 1

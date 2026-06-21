@@ -90,7 +90,8 @@
       "@prisma/client",
       "@prisma/engines",
       "prisma",
-      "@nestjs/core"
+      "@nestjs/core",
+      "@scarf/scarf"
     ]
   }
 }
