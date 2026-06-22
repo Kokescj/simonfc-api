@@ -77,11 +77,27 @@ export class UsersService {
       }
     }
 
-    return this.prisma.user.update({
-      where: { id },
-      data: dto,
-      select: USER_SELECT,
-    });
+    // Si viene password, la hasheamos y revocamos refresh tokens del target para
+    // forzar logout de sus sesiones activas. Patrón estándar de admin-reset.
+    const { password, ...rest } = dto;
+    const data: Record<string, unknown> = { ...rest };
+    if (password) {
+      data.password = await bcrypt.hash(password, BCRYPT_COST);
+    }
+
+    const [updated] = await this.prisma.$transaction([
+      this.prisma.user.update({ where: { id }, data, select: USER_SELECT }),
+      ...(password
+        ? [
+            this.prisma.refreshToken.updateMany({
+              where: { userId: id, isRevoked: false },
+              data: { isRevoked: true },
+            }),
+          ]
+        : []),
+    ]);
+
+    return updated;
   }
 
   async softDelete(id: string, actingUserId: string) {

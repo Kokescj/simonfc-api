@@ -15,7 +15,7 @@ import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nes
 const memoryStorage: () => unknown = require('multer').memoryStorage;
 import { ProfileService } from './profile.service';
 import { LocalPhotoUploader } from './local-photo-uploader';
-import { UpdateProfileDto } from './dto';
+import { ChangePasswordDto, UpdateProfileDto } from './dto';
 import { AuthGuard } from '../common/guards';
 import { User } from '../common/decorators';
 import { CurrentUser } from '../common';
@@ -40,6 +40,14 @@ export class ProfileController {
   @ApiOperation({ summary: 'Actualizar mi perfil (nombre, camiseta, número, foto)' })
   updateMe(@User() user: CurrentUser, @Body() dto: UpdateProfileDto) {
     return this.profileService.updateMe(user.id, dto);
+  }
+
+  @Post('me/change-password')
+  @ApiOperation({
+    summary: 'Cambiar mi contraseña (autoservicio). Requiere contraseña actual.',
+  })
+  changePassword(@User() user: CurrentUser, @Body() dto: ChangePasswordDto) {
+    return this.profileService.changePassword(user.id, dto);
   }
 
   @Post('me/photo')
