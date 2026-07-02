@@ -34,7 +34,8 @@ model User {
   lastName        String?    // Apellido
   jerseyName      String?    // Nombre que aparece en la camiseta
   preferredNumber Int?       // Número de jugador preferido
-  photoUrl        String?    // URL de foto de perfil (GCS)
+  photoUrl        String?    // URL de foto de perfil (avatar chico) — /uploads/players/...
+  heroPhotoUrl    String?    // URL de foto hero (cuerpo entero, aspect 9:16) — /uploads/heroes/...
   email           String     @unique
   password        String
   roles           UserRole[] @default([usuario])

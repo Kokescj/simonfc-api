@@ -75,4 +75,30 @@ export class ProfileController {
     const publicUrl = await this.localPhotoUploader.save(user.id, file);
     return this.profileService.updateMe(user.id, { photoUrl: publicUrl });
   }
+
+  @Post('me/hero-photo')
+  @ApiOperation({
+    summary: 'Subir foto hero de cuerpo entero (para el board estilo Velada). Reemplaza la actual.',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: { photo: { type: 'string', format: 'binary' } },
+      required: ['photo'],
+    },
+  })
+  @UseInterceptors(
+    FileInterceptor('photo', {
+      storage: memoryStorage(),
+      limits: { fileSize: 9 * 1024 * 1024 }, // 9MB hard limit (8MB validado dentro)
+    }),
+  )
+  async uploadHeroPhoto(
+    @User() user: CurrentUser,
+    @UploadedFile() file: { originalname: string; mimetype: string; size: number; buffer: Buffer },
+  ) {
+    const publicUrl = await this.localPhotoUploader.saveHero(user.id, file);
+    return this.profileService.updateMe(user.id, { heroPhotoUrl: publicUrl });
+  }
 }

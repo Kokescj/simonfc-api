@@ -35,6 +35,7 @@ export class MatchesService {
                 jerseyName: true,
                 preferredNumber: true,
                 photoUrl: true,
+                heroPhotoUrl: true,
               },
             },
           },

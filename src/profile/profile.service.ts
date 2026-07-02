@@ -10,6 +10,7 @@ const PROFILE_SELECT = {
   jerseyName: true,
   preferredNumber: true,
   photoUrl: true,
+  heroPhotoUrl: true,
   email: true,
   roles: true,
   status: true,

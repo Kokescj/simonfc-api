@@ -4,9 +4,12 @@ import { join, extname } from 'node:path';
 import { v4 as uuidv4 } from 'uuid';
 
 const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp']);
-const MAX_BYTES = 5 * 1024 * 1024; // 5MB
-const UPLOAD_DIR = join(process.cwd(), 'uploads', 'players');
-const PUBLIC_PREFIX = '/uploads/players';
+const MAX_BYTES = 5 * 1024 * 1024; // 5MB para avatar
+const HERO_MAX_BYTES = 8 * 1024 * 1024; // 8MB para hero (cuerpo entero, más resolución)
+const PLAYERS_DIR = join(process.cwd(), 'uploads', 'players');
+const HEROES_DIR = join(process.cwd(), 'uploads', 'heroes');
+const PLAYERS_PREFIX = '/uploads/players';
+const HEROES_PREFIX = '/uploads/heroes';
 
 interface UploadedFile {
   originalname: string;
@@ -19,7 +22,21 @@ interface UploadedFile {
 export class LocalPhotoUploader {
   private readonly logger = new Logger('LocalPhotoUploader');
 
-  async save(userId: string, file: UploadedFile): Promise<string> {
+  save(userId: string, file: UploadedFile): Promise<string> {
+    return this.write(userId, file, PLAYERS_DIR, PLAYERS_PREFIX, MAX_BYTES);
+  }
+
+  saveHero(userId: string, file: UploadedFile): Promise<string> {
+    return this.write(userId, file, HEROES_DIR, HEROES_PREFIX, HERO_MAX_BYTES);
+  }
+
+  private async write(
+    userId: string,
+    file: UploadedFile,
+    dir: string,
+    publicPrefix: string,
+    maxBytes: number,
+  ): Promise<string> {
     if (!file?.buffer) {
       throw new BadRequestException('No se recibió archivo');
     }
@@ -28,19 +45,20 @@ export class LocalPhotoUploader {
         `Tipo no permitido. Usa: ${[...ALLOWED_MIME].join(', ')}`,
       );
     }
-    if (file.size > MAX_BYTES) {
-      throw new BadRequestException('Imagen demasiado grande (máximo 5 MB)');
+    if (file.size > maxBytes) {
+      const mb = Math.round(maxBytes / (1024 * 1024));
+      throw new BadRequestException(`Imagen demasiado grande (máximo ${mb} MB)`);
     }
 
-    await fs.mkdir(UPLOAD_DIR, { recursive: true });
+    await fs.mkdir(dir, { recursive: true });
 
     const ext = pickExt(file);
     const filename = `${userId}-${uuidv4()}${ext}`;
-    const absolutePath = join(UPLOAD_DIR, filename);
+    const absolutePath = join(dir, filename);
     await fs.writeFile(absolutePath, file.buffer);
 
     this.logger.log(`✅ Foto guardada: ${filename}`);
-    return `${PUBLIC_PREFIX}/${filename}`;
+    return `${publicPrefix}/${filename}`;
   }
 }
 

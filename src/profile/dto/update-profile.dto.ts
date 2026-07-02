@@ -35,4 +35,13 @@ export class UpdateProfileDto {
   @IsString()
   @MaxLength(500)
   photoUrl?: string;
+
+  @ApiProperty({
+    required: false,
+    description: 'URL de foto hero cuerpo entero (absoluta o relativa /uploads/...)',
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  heroPhotoUrl?: string;
 }

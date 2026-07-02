@@ -44,6 +44,7 @@ export class RegistrationsService {
               jerseyName: true,
               preferredNumber: true,
               photoUrl: true,
+              heroPhotoUrl: true,
             },
           },
         },
