@@ -60,7 +60,7 @@ jobs:
       - name: Health check
         run: |
           for i in {1..10}; do
-            code=$(curl -s -o /dev/null -w "%{http_code}" https://api.portalscj.org/api/docs-json)
+            code=$(curl -s -o /dev/null -w "%{http_code}" https://api-fc.institutoarboldevida.com/api/docs-json)
             if [ "$code" = "200" ]; then
               echo "✅ API responding (HTTP $code)"
               exit 0
